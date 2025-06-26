@@ -1,8 +1,9 @@
 package com.example.ai_life.presentation.screens.viewmodel
 
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.compose.runtime.*
 
 class LoginViewModel : ViewModel() {
     var email by mutableStateOf("")

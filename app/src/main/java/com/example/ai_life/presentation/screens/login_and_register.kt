@@ -1,9 +1,10 @@
 package com.example.ai_life.presentation.screens
 
+import android.app.DatePickerDialog
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,45 +15,60 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.ai_life.R
-import androidx.compose.runtime.*
-import androidx.compose.ui.text.TextStyle
-import com.example.ai_life.presentation.screens.viewmodel.LoginViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.ai_life.R
+import com.example.ai_life.presentation.screens.viewmodel.LoginViewModel
+import com.example.ai_life.presentation.screens.viewmodel.RegisterViewModel
+import java.util.Calendar
 
 
 @Composable
 fun loginScreen (navController: NavHostController) {
     val loginViewModel: LoginViewModel = viewModel()
     var selectedTab by remember { mutableStateOf("Ingresar") }
+    val scrollState = rememberScrollState()
     Box(modifier = Modifier.fillMaxSize().background(Color.White)) {
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
             logo(modifier = Modifier.weight(3f))
             TabSelector(selectedTab = selectedTab) {
                 selectedTab = it
             }
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(20.dp))
             when (selectedTab) {
                 "Ingresar" -> LoginForm(viewModel = loginViewModel)
                 "Registrarte" -> RegisterForm()
@@ -126,49 +142,24 @@ fun TabSelector(selectedTab: String, onTabSelected: (String) -> Unit) {
 @Composable
 fun LoginForm(viewModel: LoginViewModel){
     Column(modifier = Modifier.padding(24.dp).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-        TextField(
+        textFieldWithError(
             value = viewModel.email,
             onValueChange = { viewModel.email = it },
-            placeholder = { Text("Email") },
-            textStyle = TextStyle(color = Color.Black),
-            colors = TextFieldDefaults.textFieldColors(
-                containerColor = Color.Gray.copy(alpha = 0.2f),
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                disabledIndicatorColor = Color.Transparent
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 40.dp, start = 10.dp, end = 10.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .border(1.dp, Color.Transparent.copy(alpha = 0.1f))
-
+            placeholder = "Email",
+            error = viewModel.emailError,
+            showError = viewModel.showErrors
         )
-        if (viewModel.showErrors && viewModel.emailError.isNotEmpty()) {
-            Text(viewModel.emailError, color = Color.Red, fontSize = 12.sp)
-        }
+        Spacer(modifier = Modifier.height(16.dp))
 
-        TextField(
+        textFieldWithError(
             value = viewModel.password,
             onValueChange = { viewModel.password = it },
-            placeholder = { Text("Contraseña") },
-            textStyle = TextStyle(color = Color.Black),
-            colors = TextFieldDefaults.textFieldColors(
-                containerColor = Color.Gray.copy(alpha = 0.2f),
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                disabledIndicatorColor = Color.Transparent
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 40.dp, start = 10.dp, end = 10.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .border(1.dp, Color.Transparent.copy(alpha = 0.1f))
-
+            placeholder = "Contraseña",
+            error = viewModel.passwordError,
+            showError = viewModel.showErrors
         )
-        if (viewModel.showErrors && viewModel.passwordError.isNotEmpty()) {
-            Text(viewModel.passwordError, color = Color.Red, fontSize = 12.sp)
-        }
+
+        Spacer(modifier = Modifier.height(8.dp))
         Row {
             Checkbox(
                 checked = viewModel.rememberMe,
@@ -181,6 +172,7 @@ fun LoginForm(viewModel: LoginViewModel){
             )
         }
         Spacer(modifier = Modifier.padding(10.dp))
+
         Button(onClick = {
             viewModel.showErrors = true
             if (viewModel.validate()) {
@@ -195,10 +187,338 @@ fun LoginForm(viewModel: LoginViewModel){
     }
 }
 
+
 @Composable
-fun RegisterForm() {
+fun RegisterForm(viewModel: RegisterViewModel = viewModel()) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        textFieldWithError(
+            value = viewModel.nombres,
+            onValueChange = { viewModel.nombres = it },
+            placeholder = "Nombres",
+            error = viewModel.errorNombres,
+            showError = viewModel.showErrors
+        )
+        Spacer(modifier = Modifier.padding(10.dp))
+        textFieldWithError(
+            value = viewModel.apellidos,
+            onValueChange = { viewModel.apellidos = it },
+            placeholder = "Apellidos",
+            error = viewModel.errorApellidos,
+            showError = viewModel.showErrors
+        )
+        Spacer(modifier = Modifier.padding(10.dp))
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Box(modifier = Modifier
+                .weight(1f)
+                ) {
+                textFieldWithError(
+                    value = viewModel.dni,
+                    onValueChange = { viewModel.dni = it },
+                    placeholder = "DNI",
+                    error = viewModel.errorDni,
+                    showError = viewModel.showErrors
+                )
+            }
+            Spacer(modifier = Modifier.padding(10.dp))
+            Box(modifier = Modifier
+                .weight(1f)) {
+                LocalidadDropdown(viewModel)
+            }
+        }
+        Spacer(modifier = Modifier.padding(10.dp))
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+            ) {
+                FechaNacimientoPicker(viewModel)
+            }
+            Spacer(modifier = Modifier.padding(10.dp))
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+            ) {
+                SexoDropdown(viewModel)
+            }
+        }
+        Spacer(modifier = Modifier.padding(10.dp))
+        textFieldWithError(
+            value = viewModel.correo,
+            onValueChange = { viewModel.correo = it },
+            placeholder = "Correo",
+            error = viewModel.errorCorreo,
+            showError = viewModel.showErrors
+        )
+        Spacer(modifier = Modifier.padding(10.dp))
+        textFieldWithError(
+            value = viewModel.contrasena,
+            onValueChange = { viewModel.contrasena = it },
+            placeholder = "Contraseña",
+            error = viewModel.errorContrasena,
+            showError = viewModel.showErrors
+        )
 
+        Spacer(modifier = Modifier.height(16.dp))
 
+        Button(
+            onClick = {
+                viewModel.showErrors = true
+                if (viewModel.validar()) {
+                    //Aca haremos el guardado de datos a Firebase
+                }
+            },
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF040A7E))
+        ) {
+            Text("Registrarse", color = Color.White)
+        }
+    }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun textFieldWithError(
+    value: String,
+    onValueChange: (String) -> Unit,
+    placeholder: String,
+    error: String,
+    showError: Boolean
+) {
+    Column {
+        TextField(
+            value = value,
+            onValueChange = onValueChange,
+            placeholder = { Text(placeholder, color = Color.Black) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color(0xFFF1F3FF)),
+            colors = TextFieldDefaults.textFieldColors(
+                containerColor = Color.Transparent,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent
+            ),
+            textStyle = TextStyle(color = Color.Black),
+            singleLine = true
+        )
+        if (showError && error.isNotEmpty()) {
+            Text(text = error, color = Color.Red, fontSize = 12.sp)
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SexoDropdown(viewModel: RegisterViewModel) {
+    val options = listOf("Masculino", "Femenino", "Otro")
+    var expanded by remember { mutableStateOf(false) }
+    val isError = viewModel.showErrors && viewModel.errorSexo.isNotEmpty()
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = !expanded }
+        ) {
+            TextField(
+                value = viewModel.sexo,
+                onValueChange = {},
+                readOnly = true,
+                isError = isError,
+                label = { Text("Sexo", color = Color.Black) },
+                trailingIcon = {
+                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .menuAnchor()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color(0xFFF1F3FF)),
+                colors = TextFieldDefaults.textFieldColors(
+                    focusedTextColor = Color.Black,
+                    unfocusedTextColor = Color.Black,
+                    disabledTextColor = Color.Black,
+                    errorTextColor = Color.Black,
+                    containerColor = Color.Transparent,
+                    errorContainerColor = Color.Transparent,
+                    focusedIndicatorColor = if (isError) Color.Red else Color.Transparent,
+                    unfocusedIndicatorColor = if (isError) Color.Red else Color.Transparent,
+                    errorIndicatorColor = Color.Red,
+                    disabledIndicatorColor = Color.Transparent,
+                )
+            )
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                options.forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(option) },
+                        onClick = {
+                            viewModel.sexo = option
+                            expanded = false
+                        }
+                    )
+                }
+            }
+        }
+
+        if (isError) {
+            Text(
+                text = viewModel.errorSexo,
+                color = Color.Red,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+            )
+        }
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun LocalidadDropdown(viewModel: RegisterViewModel) {
+    val localidades = listOf(
+        "Amazonas", "Áncash", "Apurímac", "Arequipa", "Ayacucho", "Cajamarca",
+        "Callao", "Cusco", "Huancavelica", "Huánuco", "Ica", "Junín", "La Libertad",
+        "Lambayeque", "Lima", "Loreto", "Madre de Dios", "Moquegua", "Pasco", "Piura",
+        "Puno", "San Martín", "Tacna", "Tumbes", "Ucayali", "Otro"
+    )
+
+    var expanded by remember { mutableStateOf(false) }
+    val isError = viewModel.showErrors && viewModel.errorLocalidad.isNotEmpty()
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = !expanded }
+        ) {
+            TextField(
+                value = viewModel.localidad,
+                onValueChange = {},
+                readOnly = true,
+                isError = isError,
+                label = { Text("Localidad", color = Color.Black) },
+                trailingIcon = {
+                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                },
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color(0xFFF1F3FF)),
+                colors = TextFieldDefaults.textFieldColors(
+                    focusedTextColor = Color.Black,
+                    unfocusedTextColor = Color.Black,
+                    disabledTextColor = Color.Black,
+                    errorTextColor = Color.Black,
+                    containerColor = Color.Transparent,
+                    errorContainerColor = Color.Transparent,
+                    focusedIndicatorColor = if (isError) Color.Red else Color.Transparent,
+                    unfocusedIndicatorColor = if (isError) Color.Red else Color.Transparent,
+                    errorIndicatorColor = Color.Red,
+                    disabledIndicatorColor = Color.Transparent,
+
+                )
+            )
+
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                localidades.forEach { ciudad ->
+                    DropdownMenuItem(
+                        text = { Text(ciudad) },
+                        onClick = {
+                            viewModel.localidad = ciudad
+                            expanded = false
+                        }
+                    )
+                }
+            }
+        }
+
+        if (isError) {
+            Text(
+                text = viewModel.errorLocalidad,
+                color = Color.Red,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+            )
+        }
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun FechaNacimientoPicker(viewModel: RegisterViewModel) {
+    val context = LocalContext.current
+    val calendar = Calendar.getInstance()
+    val interactionSource = remember { MutableInteractionSource() }
+
+    val isError = viewModel.showErrors && viewModel.errorFechaNacimiento.isNotEmpty()
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(
+                    indication = null,
+                    interactionSource = interactionSource
+                ) {
+                    DatePickerDialog(
+                        context,
+                        { _, year, month, day ->
+                            viewModel.fechaNacimiento = "$day/${month + 1}/$year"
+                        },
+                        calendar.get(Calendar.YEAR),
+                        calendar.get(Calendar.MONTH),
+                        calendar.get(Calendar.DAY_OF_MONTH)
+                    ).show()
+                }
+        ) {
+            OutlinedTextField(
+                value = viewModel.fechaNacimiento,
+                onValueChange = {},
+                readOnly = true,
+                enabled = false,
+                isError = isError,
+                label = { Text("F.N.", color = Color.Black) },
+                trailingIcon = {
+                    Icon(Icons.Default.DateRange, contentDescription = null)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color(0xFFF1F3FF)),
+                colors = TextFieldDefaults.textFieldColors(
+                    containerColor = Color.Transparent,
+                    focusedIndicatorColor = if (isError) Color.Red else Color.Transparent,
+                    unfocusedIndicatorColor = if (isError) Color.Red else Color.Transparent,
+                    errorIndicatorColor = Color.Red,
+                    disabledIndicatorColor = Color.Transparent,
+                    disabledTextColor = Color.Black
+                )
+            )
+        }
+
+        if (isError) {
+            Text(
+                text = viewModel.errorFechaNacimiento,
+                color = Color.Red,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+            )
+        }
+    }
+}
+
 
 
