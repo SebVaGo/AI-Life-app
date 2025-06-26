@@ -4,8 +4,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.ai_life.domain.usecase.RegisterUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import kotlinx.coroutines.launch
 
-class RegisterViewModel : ViewModel() {
+@HiltViewModel
+class RegisterViewModel @Inject constructor(
+    private val registerUseCase: RegisterUseCase
+) : ViewModel() {
     var nombres by mutableStateOf("")
     var apellidos by mutableStateOf("")
     var dni by mutableStateOf("")
@@ -83,5 +91,17 @@ class RegisterViewModel : ViewModel() {
         } else errorContrasena = ""
 
         return valido
+    }
+
+    fun signUp(onResult: (Boolean, String?) -> Unit) {
+        if (!validar()) {
+            onResult(false, null)
+            return
+        }
+        viewModelScope.launch {
+            registerUseCase(correo, contrasena).collect { result ->
+                onResult(result.isSuccess, result.exceptionOrNull()?.message)
+            }
+        }
     }
 }

@@ -4,8 +4,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.ai_life.domain.usecase.LoginUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import kotlinx.coroutines.launch
 
-class LoginViewModel : ViewModel() {
+@HiltViewModel
+class LoginViewModel @Inject constructor(
+    private val loginUseCase: LoginUseCase
+) : ViewModel() {
     var email by mutableStateOf("")
     var password by mutableStateOf("")
     var rememberMe by mutableStateOf(false)
@@ -33,5 +41,18 @@ class LoginViewModel : ViewModel() {
         }
 
         return isValid
+    }
+
+    fun signIn(onResult: (Boolean, String?) -> Unit) {
+        if (!validate()) {
+            showErrors = true
+            onResult(false, null)
+            return
+        }
+        viewModelScope.launch {
+            loginUseCase(email, password).collect { result ->
+                onResult(result.isSuccess, result.exceptionOrNull()?.message)
+            }
+        }
     }
 }

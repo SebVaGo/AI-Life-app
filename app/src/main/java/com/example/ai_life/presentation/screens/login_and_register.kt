@@ -49,7 +49,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.ai_life.R
 import com.example.ai_life.presentation.screens.viewmodel.LoginViewModel
@@ -59,7 +59,7 @@ import java.util.Calendar
 
 @Composable
 fun loginScreen (navController: NavHostController) {
-    val loginViewModel: LoginViewModel = viewModel()
+    val loginViewModel: LoginViewModel = hiltViewModel()
     var selectedTab by remember { mutableStateOf("Ingresar") }
     val scrollState = rememberScrollState()
     Box(modifier = Modifier.fillMaxSize().background(Color.White)) {
@@ -189,7 +189,7 @@ fun LoginForm(viewModel: LoginViewModel){
 
 
 @Composable
-fun RegisterForm(viewModel: RegisterViewModel = viewModel()) {
+fun RegisterForm(viewModel: RegisterViewModel = hiltViewModel()) {
     Column(
         modifier = Modifier
             .fillMaxSize()
