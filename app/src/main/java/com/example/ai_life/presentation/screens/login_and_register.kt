@@ -47,10 +47,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.example.ai_life.R
 import com.example.ai_life.presentation.screens.viewmodel.LoginViewModel
 import com.example.ai_life.presentation.screens.viewmodel.RegisterViewModel
@@ -58,9 +60,9 @@ import java.util.Calendar
 
 
 @Composable
-fun loginScreen (navController: NavHostController) {
+fun loginScreen (navController: NavHostController, initialTab: String = "Ingresar") {
     val loginViewModel: LoginViewModel = viewModel()
-    var selectedTab by remember { mutableStateOf("Ingresar") }
+    var selectedTab by remember { mutableStateOf(initialTab) }
     val scrollState = rememberScrollState()
     Box(modifier = Modifier.fillMaxSize().background(Color.White)) {
         Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
@@ -138,7 +140,7 @@ fun TabSelector(selectedTab: String, onTabSelected: (String) -> Unit) {
         }
     }
 }
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun LoginForm(viewModel: LoginViewModel){
     Column(modifier = Modifier.padding(24.dp).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -522,3 +524,16 @@ fun FechaNacimientoPicker(viewModel: RegisterViewModel) {
 
 
 
+@Preview(showBackground = true, name = "Vista Ingresar")
+@Composable
+fun PreviewLogin() {
+    val navController = rememberNavController()
+    loginScreen(navController = navController, initialTab = "Ingresar")
+}
+
+@Preview(showBackground = true, name = "Vista Registrarte",heightDp = 1050)
+@Composable
+fun PreviewRegister() {
+    val navController = rememberNavController()
+    loginScreen(navController = navController, initialTab = "Registrarte")
+}
