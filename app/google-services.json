@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "305678973015",
+    "firebase_url": "https://ai-live-143eb-default-rtdb.firebaseio.com",
+    "project_id": "ai-live-143eb",
+    "storage_bucket": "ai-live-143eb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:305678973015:android:56f934522d30e81c584b12",
+        "android_client_info": {
+          "package_name": "com.example.ai_life"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBGxDb2NH9IZ0KgYITdpj9DQrFjt62mGBs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

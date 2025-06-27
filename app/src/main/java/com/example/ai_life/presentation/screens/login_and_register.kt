@@ -81,24 +81,24 @@ fun loginScreen (navController: NavHostController, initialTab: String = "Ingresa
 
 @Composable
 fun logo(modifier: Modifier = Modifier) {
-        Box(modifier = Modifier.fillMaxWidth().padding(start = 80.dp, end = 80.dp,top=60.dp , bottom = 30.dp)) {
-            Column(modifier = Modifier.fillMaxWidth()
-                , verticalArrangement = Arrangement.Top, horizontalAlignment =Alignment.CenterHorizontally ) {
-                val image = painterResource(id = R.drawable.logo)
-                Image(
-                    painter = image,
-                    modifier = Modifier.fillMaxWidth(),
-                    contentScale = ContentScale.FillWidth,
-                    contentDescription = null,
-                    )
-                Spacer(modifier=Modifier.padding(15.dp))
-                Text(
-                    "AI LIVE",
-                    fontSize = 40.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = Color(0xFF1B3CAA)
-                )
-            }
+    Box(modifier = Modifier.fillMaxWidth().padding(start = 80.dp, end = 80.dp,top=60.dp , bottom = 30.dp)) {
+        Column(modifier = Modifier.fillMaxWidth()
+            , verticalArrangement = Arrangement.Top, horizontalAlignment =Alignment.CenterHorizontally ) {
+            val image = painterResource(id = R.drawable.logo)
+            Image(
+                painter = image,
+                modifier = Modifier.fillMaxWidth(),
+                contentScale = ContentScale.FillWidth,
+                contentDescription = null,
+            )
+            Spacer(modifier=Modifier.padding(15.dp))
+            Text(
+                "AI LIVE",
+                fontSize = 40.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = Color(0xFF1B3CAA)
+            )
+        }
     }
 }
 
@@ -180,9 +180,9 @@ fun LoginForm(viewModel: LoginViewModel){
             if (viewModel.validate()) {
             }
         }, modifier = Modifier.fillMaxWidth().height(50.dp),
-        elevation = ButtonDefaults.buttonElevation(defaultElevation = 8.dp)
-        ,colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF040A7E),
-        contentColor = Color.White ))
+            elevation = ButtonDefaults.buttonElevation(defaultElevation = 8.dp)
+            ,colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF040A7E),
+                contentColor = Color.White ))
         {
             Text("Acceder", fontSize = 17.sp, color=Color.White)
         }
@@ -217,7 +217,7 @@ fun RegisterForm(viewModel: RegisterViewModel = viewModel()) {
         Row(modifier = Modifier.fillMaxWidth()) {
             Box(modifier = Modifier
                 .weight(1f)
-                ) {
+            ) {
                 textFieldWithError(
                     value = viewModel.dni,
                     onValueChange = { viewModel.dni = it },
@@ -427,7 +427,7 @@ fun LocalidadDropdown(viewModel: RegisterViewModel) {
                     errorIndicatorColor = Color.Red,
                     disabledIndicatorColor = Color.Transparent,
 
-                )
+                    )
             )
 
             ExposedDropdownMenu(
