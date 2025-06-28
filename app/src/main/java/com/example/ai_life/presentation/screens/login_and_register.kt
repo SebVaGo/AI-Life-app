@@ -44,6 +44,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import android.widget.Toast
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -53,6 +54,13 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
+import com.example.ai_life.data.auth.FirebaseAuthRepository
+import com.example.ai_life.data.user.FirebaseUserRepository
+import com.example.ai_life.domain.model.User
+import com.example.ai_life.domain.usecase.RegisterUserUseCase
+import com.example.ai_life.domain.usecase.SaveUserUseCase
 import com.example.ai_life.R
 import com.example.ai_life.presentation.screens.viewmodel.LoginViewModel
 import com.example.ai_life.presentation.screens.viewmodel.RegisterViewModel
@@ -267,11 +275,39 @@ fun RegisterForm(viewModel: RegisterViewModel = viewModel()) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        val coroutineScope = rememberCoroutineScope()
+        val context = LocalContext.current
+        val authRepo = remember { FirebaseAuthRepository() }
+        val userRepo = remember { FirebaseUserRepository() }
+        val registerUseCase = remember { RegisterUserUseCase(authRepo) }
+        val saveUserUseCase = remember { SaveUserUseCase(userRepo) }
+
         Button(
             onClick = {
                 viewModel.showErrors = true
                 if (viewModel.validar()) {
-                    //Aca haremos el guardado de datos a Firebase
+                    coroutineScope.launch {
+                        val user = User(
+                            nombres = viewModel.nombres,
+                            apellidos = viewModel.apellidos,
+                            dni = viewModel.dni,
+                            localidad = viewModel.localidad,
+                            fechaNacimiento = viewModel.fechaNacimiento,
+                            sexo = viewModel.sexo,
+                            email = viewModel.correo
+                        )
+                        val authResult = registerUseCase(user, viewModel.contrasena)
+                        authResult.getOrNull()?.let { uid ->
+                            val saveResult = saveUserUseCase(user.copy(uid = uid))
+                            if (saveResult.isSuccess) {
+                                Toast.makeText(
+                                    context,
+                                    "Registro exitoso",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        }
+                    }
                 }
             },
             modifier = Modifier.fillMaxWidth(),
