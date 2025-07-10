@@ -38,6 +38,7 @@ import com.example.ai_life.presentation.screens.viewmodel.DiagnosticoViewModel
 fun DiagnosticoScreen(
     navController: NavHostController,
     consulta: Consulta,
+    diagnosticoGuardado: String? = null,
     viewModel: DiagnosticoViewModel = viewModel()
 ) {
     val context = LocalContext.current
@@ -46,7 +47,11 @@ fun DiagnosticoScreen(
     val status by viewModel.status.collectAsState()
 
     LaunchedEffect(Unit) {
-        viewModel.ejecutarDiagnostico(context, consulta)
+        if (diagnosticoGuardado == null) {
+            viewModel.ejecutarDiagnostico(context, consulta)
+        } else {
+            viewModel.setDiagnosticoGuardado(diagnosticoGuardado)
+        }
     }
 
     Scaffold(
@@ -142,6 +147,7 @@ fun PreviewDiagnostico() {
     val navController = rememberNavController()
     DiagnosticoScreen(
         navController,
-        Consulta(code = "123", bpm = 80, spo2 = 95, temperatura = 36.5)
+        Consulta(code = "123", bpm = 80, spo2 = 95, temperatura = 36.5),
+        "Normal"
     )
 }

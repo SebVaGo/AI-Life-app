@@ -38,8 +38,10 @@ import androidx.navigation.compose.rememberNavController
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.IconButton
 import androidx.lifecycle.viewmodel.compose.viewModel
+import java.text.SimpleDateFormat
+import java.util.Date
 import com.example.ai_life.R
-import com.example.ai_life.domain.model.Consulta
+import com.example.ai_life.domain.model.ConsultaGuardada
 import com.example.ai_life.presentation.screens.viewmodel.ConsultaViewModel
 import kotlin.math.absoluteValue
 
@@ -111,7 +113,7 @@ fun ConsultaScreen(
 }
 
 @Composable
-fun ConsultaItem(navController: NavHostController, consulta: Consulta) {
+fun ConsultaItem(navController: NavHostController, consulta: ConsultaGuardada) {
     Column {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -119,6 +121,10 @@ fun ConsultaItem(navController: NavHostController, consulta: Consulta) {
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(text = "Código: ${consulta.code}", fontSize = 16.sp)
+                if (consulta.fecha > 0) {
+                    val date = SimpleDateFormat("dd/MM/yyyy").format(Date(consulta.fecha))
+                    Text(text = "Fecha: $date", fontSize = 16.sp)
+                }
                 Text(text = "BPM: ${consulta.bpm}", fontSize = 16.sp)
                 Text(text = "SpO2: ${consulta.spo2}", fontSize = 16.sp)
                 Text(text = "Temp: ${consulta.temperatura}", fontSize = 16.sp)
@@ -131,8 +137,9 @@ fun ConsultaItem(navController: NavHostController, consulta: Consulta) {
                     val tempFloat = consulta.temperatura.toFloat().absoluteValue
                         .let { "%.2f".format(it).toFloat() }
 
+                    val diag = java.net.URLEncoder.encode(consulta.diagnostico, "UTF-8")
                     navController.navigate(
-                        "diagnostico/${consulta.code}/${consulta.bpm}/${consulta.spo2}/$tempFloat"
+                        "diagnostico/${consulta.code}/${consulta.bpm}/${consulta.spo2}/$tempFloat/$diag"
                     )
                 },                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF040A7E)),
                 shape = RoundedCornerShape(50),

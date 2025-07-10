@@ -10,6 +10,9 @@ import com.example.ai_life.data.ml.ModelDownloaderUtil
 import com.example.ai_life.data.user.FirebaseUserRepository
 import com.example.ai_life.domain.model.Consulta
 import com.example.ai_life.domain.model.User
+import com.example.ai_life.domain.model.ConsultaGuardada
+import com.google.firebase.database.ktx.database
+import kotlinx.coroutines.tasks.await
 import com.example.ai_life.presentation.util.Constants
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,6 +40,8 @@ class DiagnosticoViewModel(
 
     // Guardamos el interpreter para reutilizarlo
     private var interpreter: Interpreter? = null
+
+    private val db = Firebase.database.reference
 
     fun ejecutarDiagnostico(context: Context, consulta: Consulta) {
         viewModelScope.launch {
@@ -86,7 +91,10 @@ class DiagnosticoViewModel(
                 _diagnosticoEtiqueta.value = etiqueta
                 Log.d(TAG, "Etiqueta mapeada: $etiqueta")
 
-                // 5) Resultado final
+                // 5) Guardar en historial y eliminar código
+                guardarHistorial(uid, consulta, etiqueta)
+
+                // Resultado final
                 _status.value = "Diagnóstico: $etiqueta"
                 Log.d(TAG, "Diagnóstico completado: $etiqueta")
 
@@ -109,5 +117,30 @@ class DiagnosticoViewModel(
             Log.e(TAG, "Error calculando edad", e)
             0
         }
+    }
+
+    private suspend fun guardarHistorial(uid: String, consulta: Consulta, diag: String) {
+        try {
+            val saved = ConsultaGuardada(
+                code = consulta.code,
+                bpm = consulta.bpm,
+                spo2 = consulta.spo2,
+                temperatura = consulta.temperatura,
+                diagnostico = diag,
+                fecha = System.currentTimeMillis()
+            )
+            db.child("users").child(uid).child("consultas").child(consulta.code)
+                .setValue(saved).await()
+
+            // eliminar del root para que no se pueda volver a consultar
+            db.child(consulta.code).removeValue().await()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error guardando historial", e)
+        }
+    }
+
+    fun setDiagnosticoGuardado(diag: String) {
+        Log.d(TAG, "Usando diagnóstico guardado: $diag")
+        _diagnosticoEtiqueta.value = diag
     }
 }
