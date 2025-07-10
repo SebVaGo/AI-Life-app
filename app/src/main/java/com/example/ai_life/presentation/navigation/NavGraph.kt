@@ -23,21 +23,25 @@ fun NavGraph() {
         composable("login_register"){ loginScreen(navController) }
         composable("dashboard"){dashboardScreen(navController)}
         composable(
-            route = "diagnostico/{code}/{bpm}/{spo2}/{temp}",
+            route = "diagnostico/{code}/{bpm}/{spo2}/{temp}/{diag}",
             arguments = listOf(
                 navArgument("code") { type = NavType.StringType },
                 navArgument("bpm") { type = NavType.IntType },
                 navArgument("spo2") { type = NavType.IntType },
-                navArgument("temp") { type = NavType.FloatType }
+                navArgument("temp") { type = NavType.FloatType },
+                navArgument("diag") { type = NavType.StringType }
             )
         ) { backStackEntry ->
             val code = backStackEntry.arguments?.getString("code") ?: ""
             val bpm = backStackEntry.arguments?.getInt("bpm") ?: 0
             val spo2 = backStackEntry.arguments?.getInt("spo2") ?: 0
             val temp = backStackEntry.arguments?.getFloat("temp") ?: 0f
+            val diagArg = backStackEntry.arguments?.getString("diag") ?: ""
+            val diag = java.net.URLDecoder.decode(diagArg, "UTF-8")
             DiagnosticoScreen(
                 navController,
-                Consulta(code, bpm, spo2, temp.toDouble())
+                Consulta(code, bpm, spo2, temp.toDouble()),
+                diag.ifBlank { null }
             )
         }
         composable("consulta"){ConsultaScreen(navController)}
